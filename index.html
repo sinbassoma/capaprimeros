@@ -1138,9 +1138,14 @@ function marcarComoCompleto() {
   document.getElementById('estado').textContent = '✅ ¡Video completado! Ya puedes continuar';
   document.getElementById('estado').style.color = '#22c55e';
   
-  // === CÓDIGO NUEVO PARA DESBLOQUEAR ===
+  // ✅ Función centralizada para desbloquear (puedes ponerla al inicio de tu script)
+function desbloquearContenido() {
+  // Actualizar UI
+  document.getElementById('barra').value = 100;
+  document.getElementById('estado').textContent = '✅ ¡Completado! Ya puedes continuar';
+  document.getElementById('estado').style.color = '#22c55e';
   
-  // 1. Habilitar los enlaces de los botones
+  // Habilitar enlaces
   const examenBtn = document.getElementById("examen");
   const virtualBtn = document.getElementById("virtual");
   const fisicoBtn = document.getElementById("fisico");
@@ -1148,6 +1153,18 @@ function marcarComoCompleto() {
   if (examenBtn) examenBtn.href = "examen.pdf";
   if (virtualBtn) virtualBtn.href = "https://tuformulario.com";
   if (fisicoBtn) fisicoBtn.href = "registro.pdf";
+  
+  // Remover bloqueo visual
+  document.querySelectorAll(".btn.bloqueado").forEach(btn => {
+    btn.classList.remove("bloqueado");
+    btn.style.pointerEvents = "auto";
+    btn.style.opacity = "1";
+    btn.style.cursor = "pointer";
+  });
+  
+  // Guardar progreso
+  localStorage.setItem('sinba_video_completado', 'true');
+}
   
   // 2. Remover clase "bloqueado" y añadir interactividad
   document.querySelectorAll(".btn.bloqueado").forEach(btn => {
