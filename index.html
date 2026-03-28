@@ -1131,15 +1131,43 @@ video {
   }
 
   // Marcar video como completado
-  function marcarComoCompleto() {
-    videoCompleto = true;
-    document.getElementById('barra').value = 100;
-    document.getElementById('estado').textContent = '✅ ¡Video completado! Ya puedes continuar';
-    document.getElementById('estado').style.color = '#22c55e';
-    
-    // Aquí puedes habilitar el siguiente paso, guardar en BD, etc.
-    // habilitarSiguienteContenido();
-  }
+  // 🔧 Reemplaza tu función marcarComoCompleto() por esta:
+function marcarComoCompleto() {
+  videoCompleto = true;
+  document.getElementById('barra').value = 100;
+  document.getElementById('estado').textContent = '✅ ¡Video completado! Ya puedes continuar';
+  document.getElementById('estado').style.color = '#22c55e';
+  
+  // === CÓDIGO NUEVO PARA DESBLOQUEAR ===
+  
+  // 1. Habilitar los enlaces de los botones
+  const examenBtn = document.getElementById("examen");
+  const virtualBtn = document.getElementById("virtual");
+  const fisicoBtn = document.getElementById("fisico");
+  
+  if (examenBtn) examenBtn.href = "examen.pdf";
+  if (virtualBtn) virtualBtn.href = "https://tuformulario.com";
+  if (fisicoBtn) fisicoBtn.href = "registro.pdf";
+  
+  // 2. Remover clase "bloqueado" y añadir interactividad
+  document.querySelectorAll(".btn.bloqueado").forEach(btn => {
+    btn.classList.remove("bloqueado");
+    btn.style.pointerEvents = "auto";
+    btn.style.opacity = "1";
+    btn.style.cursor = "pointer";
+  });
+  
+  // 3. (Opcional) Guardar progreso en localStorage
+  localStorage.setItem('sinba_video_completado', 'true');
+  
+  // 4. (Opcional) Mostrar mensaje visual de desbloqueo
+  setTimeout(() => {
+    document.querySelectorAll(".btn").forEach(btn => {
+      btn.style.transform = "scale(1.05)";
+      setTimeout(() => btn.style.transform = "scale(1)", 200);
+    });
+  }, 300);
+}
 
   // Ajuste responsivo para el player
   function ajustarAlturaPlayer() {
