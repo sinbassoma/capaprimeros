@@ -800,6 +800,75 @@ video {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
+
+
+<style>
+  .card {
+    max-width: 700px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    background: #fff;
+    font-family: system-ui, sans-serif;
+  }
+  
+  .card h2 {
+    margin: 0 0 15px 0;
+    color: #1f2937;
+    text-align: center;
+  }
+  
+  .video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 */
+    height: 0;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 15px;
+  }
+  
+  .video-container #player {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  
+  #estado {
+    text-align: center;
+    font-weight: 500;
+    color: #6b7280;
+    margin: 10px 0;
+    transition: color 0.3s;
+  }
+  
+  progress {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  progress::-webkit-progress-bar {
+    background: #e5e7eb;
+    border-radius: 4px;
+  }
+  
+  progress::-webkit-progress-value {
+    background: linear-gradient(90deg, #3b82f6, #6366f1);
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+  
+  progress::-moz-progress-bar {
+    background: linear-gradient(90deg, #3b82f6, #6366f1);
+    border-radius: 4px;
+  }
+</style>
 </style>
 </head>
 
@@ -824,10 +893,8 @@ video {
 <div class="card">
   <h2>🎥 Capacitación</h2>
   <div class="video-container">
-    <video id="video" controls playsinline>
-      <source src="video.mp4" type="video/mp4">
-      Tu navegador no soporta videos. Por favor usa otro navegador.
-    </video>
+    <!-- Contenedor para el iframe de YouTube -->
+    <div id="player"></div>
   </div>
   <p id="estado">📌 Debes ver el video completo para continuar</p>
   <progress id="barra" value="0" max="100"></progress>
@@ -986,6 +1053,107 @@ video {
     <button class="modal-btn secondary" id="btn-cerrar">❌ Cerrar</button>
   </div>
 </div>
+<script>
+  let player;
+  let videoCompleto = false;
+  const videoId = 'dc-B-AJQnpM'; // ID extraído de tu URL
+
+  // Función que crea el player cuando la API está lista
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+      height: '390',
+      width: '640',
+      videoId: videoId,
+      playerVars: {
+        'playsinline': 1,
+        'controls': 1,
+        'rel': 0,
+        'modestbranding': 1
+      },
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange
+      }
+    });
+  }
+
+  // Cuando el player está listo
+  function onPlayerReady(event) {
+    // Opcional: ajustar altura responsiva
+    ajustarAlturaPlayer();
+  }
+
+  // Escuchar cambios de estado del video
+  function onPlayerStateChange(event) {
+    // YT.PlayerState.PLAYING = 1
+    // YT.PlayerState.ENDED = 0
+    
+    if (event.data === YT.PlayerState.PLAYING) {
+      // Iniciar monitoreo del progreso
+      monitorearProgreso();
+    }
+    
+    if (event.data === YT.PlayerState.ENDED && !videoCompleto) {
+      marcarComoCompleto();
+    }
+  }
+
+  // Monitorear progreso cada segundo
+  function monitorearProgreso() {
+    const interval = setInterval(() => {
+      if (!player || !player.getCurrentTime) return;
+      
+      const currentTime = player.getCurrentTime();
+      const duration = player.getDuration();
+      
+      if (duration > 0) {
+        const porcentaje = Math.min((currentTime / duration) * 100, 100);
+        actualizarProgreso(porcentaje);
+        
+        // Marcar como completo si llegó al 95% o más
+        if (porcentaje >= 95 && !videoCompleto) {
+          clearInterval(interval);
+          marcarComoCompleto();
+        }
+      }
+    }, 1000);
+  }
+
+  // Actualizar barra de progreso y estado
+  function actualizarProgreso(porcentaje) {
+    document.getElementById('barra').value = Math.floor(porcentaje);
+    
+    if (porcentaje < 95) {
+      document.getElementById('estado').textContent = 
+        `📌 Progreso: ${Math.floor(porcentaje)}% - Continúa viendo para completar`;
+    }
+  }
+
+  // Marcar video como completado
+  function marcarComoCompleto() {
+    videoCompleto = true;
+    document.getElementById('barra').value = 100;
+    document.getElementById('estado').textContent = '✅ ¡Video completado! Ya puedes continuar';
+    document.getElementById('estado').style.color = '#22c55e';
+    
+    // Aquí puedes habilitar el siguiente paso, guardar en BD, etc.
+    // habilitarSiguienteContenido();
+  }
+
+  // Ajuste responsivo para el player
+  function ajustarAlturaPlayer() {
+    const container = document.querySelector('.video-container');
+    const ratio = 9 / 16; // 16:9 aspect ratio
+    const width = container.offsetWidth;
+    player.setSize(width, width * ratio);
+    
+    // Recalcular al redimensionar ventana
+    window.addEventListener('resize', () => {
+      const newWidth = container.offsetWidth;
+      player.setSize(newWidth, newWidth * ratio);
+    });
+  }
+</script>
 
 <!-- THREE.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
